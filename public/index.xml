@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Mike&#39;s Blog</title>
+    <link>/</link>
+    <description>Recent content on Mike&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 23 Apr 2017 21:48:51 -0700</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>/about/</link>
+      <pubDate>Sun, 23 Apr 2017 21:48:51 -0700</pubDate>
+      
+      <guid>/about/</guid>
+      <description>Hi! This is my professional (and only) website. I&amp;rsquo;m an Advanced Analytics Consultant with Anthem, Inc. In my day to day work I use a combination of economics, statistics, and R/Python programming to help ensure that Anthem&amp;rsquo;s members get the highest value care.</description>
+    </item>
+    
+    <item>
+      <title>Example Rmd</title>
+      <link>/2017/04/23/example-rmd/</link>
+      <pubDate>Sun, 23 Apr 2017 21:13:14 -0500</pubDate>
+      
+      <guid>/2017/04/23/example-rmd/</guid>
+      <description>This is an example of the Rmd file for future reference…This is just a copy of Frida Gorman’s example.
+R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.</description>
+    </item>
+    
+  </channel>
+</rss>
