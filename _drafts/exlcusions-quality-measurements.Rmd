@@ -1,0 +1,14 @@
+---
+title: "Thoughts on Exclusion Criteria in Quality Measurement"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This issue came up at work today, and I thhought it was worth covering in short. 
+
+Quality measurement is ubiquitous in healthcare today. 
+
+Need to talk about specificity/sensitivity tradeoff and note that often when we are excluding a member we are giving too much benefit to providers. Talk about example of HEDIS measure for LBP and exclusions for HIV. In practice, this 'protects' providers from being dinged. 
