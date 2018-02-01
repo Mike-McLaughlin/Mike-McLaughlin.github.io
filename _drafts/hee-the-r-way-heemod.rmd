@@ -1,0 +1,28 @@
+---
+title: "HEE-The R Way: Markov modeling with heemod"
+output: html_document
+categories: statistics health-economics tutorials
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.path='~/Desktop/Mike-McLaughlin.github.io/images/thoughts-on-causal-analysis-v-prediction',
+                      echo = F)
+```
+
+##Introduction
+This is the first post in what I'll start calling the "Health Economics The R Way" series, in which I'll provide tutorials on how to do common health economics tasks using R.
+
+This post covers an introduction to using the `heemod` R package to do markov modeling, with an emphasis on applications to health economics (specifically an evaluation of healthcare technologies).
+
+
+##Markov modeling in a nutshell
+Very simply put
+
+```{r installing}
+#Install if you need: to check if you have the package installed you could
+#run: "heemod" %in% rownames(installed.packages())
+library(heemod)
+
+
+```
