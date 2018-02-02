@@ -4,8 +4,6 @@ layout: post
 categories: statistics thoughts
 ---
 
-
-
 In my day to day work I'm typically faced with questions of causality. A typical example might be a program owner who asks what will happen if she can use her program to get people more adherent to their medications. This leads to a type of 'what-if' or causal analysis which, in my mind, is (slightly) different than a question of building great predictions. Here are a couple things I think differentiate them:
 
 ### 1. Fewer metrics to assess whether you've drawn good causal conclusions.
