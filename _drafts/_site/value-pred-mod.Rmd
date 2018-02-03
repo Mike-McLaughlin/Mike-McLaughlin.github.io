@@ -1,0 +1,10 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Obviously machine learning is a big deal--everyone's using it, everyone's looking to do more of it, etc..
+
+One point Ive been thinking about is the idea that machine learnig models themsevles have value. This related closely to ideas that frank harrel and others (assessing the performance of predictive models 2010 pudmed) have expressed.
+
+In short, predictive models only have value to the extent that they change or optimize decision-making. The followup means that to assess whether a model has great value, it's important to think about how model will results will make a difference in devisions. 
+

@@ -1,20 +1,15 @@
----
-title: "HEE-The R Way: Intro to Markov Modeling With heemod"
-output: html_document
-categories: statistics health-economics tutorials markov-modeling R
----
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.path='{{ site.url }}/images/hee-the-r-way-heemod-',
+#fig.path='~/Desktop/Mike-McLaughlin.github.io/images/hee-the-r-way-heemod-',
+knitr::opts_chunk$set(
                       echo = F)
 ```
 
-## Introduction
+##Introduction
 This is the first post in what I'll start calling the "Health Economics The R Way" series, in which I'll provide tutorials on how to do common health economics tasks using R. The target audience would be people who have a bit of programming and data analysis skills, and want to learn how to use R for some of the common tasks used in health econmics/outcomes research. In each post I'll try to give a little bit of background to the topic, but the major focus will be on how to do the programming. For better references, I'd recommend Neumann, et al's. book, which is sort of a standard reference--[Amazon link](https://www.amazon.com/Cost-Effectiveness-Health-Medicine-Peter-Neumann/dp/0190492937/ref=sr_1_1?ie=UTF8&qid=1517673774&sr=8-1&keywords=costeffectiveness+in+health+and+medicine)-- or the Handbooks in Health Economics series from Oxford Press--[Amazon link](https://www.amazon.com/Cost-effectiveness-Analysis-Healthcare-Handbooks-Evaluation/dp/0199227284/ref=sr_1_5?ie=UTF8&qid=1517673774&sr=8-5&keywords=costeffectiveness+in+health+and+medicine).
 
 This post covers an introduction to using the `heemod` R package to do Markov modeling.
 
-## Markov modeling in the context of technology evaluation
+##Markov modeling in the context of technology evaluation
 Let's say we have a new therapy for multiple sclerosis (MS). For those who don't know, MS is a degenerative disorder. This means means that over time the disease causes more and more damage, causing the symptoms that patients experience to worsen. Let's also assume the manufacturer of this new therapy (say it's a pill to be concrete...) wants to price the drug such that therapy would cost \$40,000/yr. A lot of money right? An insurer (or in this case a pharmacy benefits manager since it's a drug) might try to negotiate a lower price on the grounds that \$40,000/yr is too much. There might already be an effective drug that costs \$15,000/yr. The manufacturer could counter, saying that because their new drug slows disease progression much better than the old drug and, as a result, the manufacturer says insurers could actually save money because they have to pay for fewer rehabilitative services. You could imagine this sort of simple negotiating going back and forth. Ultimately, what would help here is a model that could help quanitfy the value of this new drug and compare that to the value of the old drug.
 
 In this case, a Markov model might help. Markov models are a mathetmatical tool that, in their simplest and most common form, treat individuals as belonging to a single state in a given point in time. Individuals are then assumed to transition to new states with a probability that only depends on their current state (this is the Markov property that gives these models their names). 
@@ -23,7 +18,7 @@ How can these tools be used to assess the value of drugs? Well, let's say that w
 
 It's probably easiest to understand if we actually get in and start programming a bit, so let's do that.
 
-## Getting started in R
+##Getting started in R
 To do Markov modeling we'll be using the R `heemod` package. You'll first need to see if you have the package installed and, if you don't, you'll need to download it from CRAN. To check if you have a package installed you can run `"heemod" %in% rownames(installed.packages()` which will check for the name 'heedmod' in the list of all packages you have installed. If you don't have it installed (i.e., the command above returns `FALSE`), you can run `install.packages("heemod")` which, if you're connected to the internet, will automatically download the package from CRAN. Once you've downloaded the package you can get started by calling `library(heemod)`. So, your script should simply be:
 
 ```{r installing, echo  = T}
@@ -32,7 +27,7 @@ To do Markov modeling we'll be using the R `heemod` package. You'll first need t
 library(heemod)
 ```
 
-## Defining transition matrices
+##Defining transition matrices
 Once the package is loaded you can start defining states and transition probabilities. Let's again say we have three states: 'low', 'medium' and 'high'. We can define a set of transition probabilities between the states in a table where the row indicates the starting state, and the column indicates the ending state. These probabilities could be based on results of clinical studies or based on expert opinion or some other source. Also, note that we have to specify probabilities, not percentages. Probabilities have to be numbers between 0.0 and 1.0. 
 
 |        | Low  | Medium | High |
@@ -89,14 +84,14 @@ attr(trans_new,'state_names') <- states
 trans_old
 ```
 
-## Visualizing the transitions
+##Visualizing the transitions
 The `heemod` package has some nice functions available that use `ggplot2` and other packages to visualize models and results (note: you may need to install these packages. For exmaple, I initially got an error saying the `diagram` package was required for plotting, so I needed to install it). For example, we can visualize our transitions by calling `plot` on our transition matrices. Here's a plot for the transition matrix with the old drug.
 
 ```{r plot_trans, echo = T}
 plot(trans_old)
 ```
 
-## Adding values to states
+##Adding values to states
 The next thing we'll want to do is add value information to our different states. This value information is how we can specify, for example, an individual's costs and health related quality of life. Since we ultimately want to compare drugs, we'll need to specify values for each drug. To do this we'll use a combination of `define_state` to define values for a particular state and `dispatch_strategy` to tell R that we want the value to depend on which 'strategy' (new or old drug) we are using. Our cost information could again come from clinical studies, observational data, etc.. We'll assume that, exlcuding drug costs, if someone spends a year in a 'low' state they incur \$20,000, if they are 'medium' they incur \$40,000, and in a 'high' state they incur \$100,000. We'll also add the drug costs-\$15,000/yr for the old drug and \$40,000/yr for the new drug. 
 
 Note that, by default, `heemod` models want to do cost-effectiveness analysis (something we won't cover in depth yet). For this reason when you define a state you need to specify both a cost aspect *and* and effect aspect. Here we'll just code effect as `1` although in reality this effect would be something like years of life or quality-adjusted life years (QALYs). 
@@ -126,7 +121,7 @@ state_high <- define_state(
     )
 ```
 
-## Putting states and transitions together to make a model
+##Putting states and transitions together to make a model
 Finally, we're ready to combine our states and our transition probabilities together. We'll do this by creating a 'strategy' for each of the drugs using `define_strategy`:
 
 ```{r create_strat, echo = T}
@@ -162,9 +157,11 @@ mod_rslt <- run_model(
 
 ```{r summ, echo=T}
 summary(mod_rslt)
+
+
 ```
 
-So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be \$192,528,448 versus $130,028,448 for the old drug or \$125,000 more per person over five years. So, this model suggests the manufacturer is wrong--it will cost payers more to switch to the new drug.
+So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be \$192,528,448 versus $130,028,448 for the old drug or \$`r (192528448 - 130028448) / (500*5)` more per person annually. So, this model suggests the manufacturer is wrong--it will cost payers more to switch to the new drug.
 
-## Conclusion
+##Conclusion
 This post should give enough to get someone started with building their own Markov models in R. In future posts I'll show how to extend this functionality so models can become more flexible. For example, showing how you can allow probabilities or costs to vary based on individual demographics. I'll also show how this Markov modeling can be integrated with other R functionality, making it faster and easier to execute very complex analyses.

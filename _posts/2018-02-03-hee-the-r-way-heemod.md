@@ -4,10 +4,7 @@ output: html_document
 categories: statistics health-economics tutorials markov-modeling R
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.path='{{ site.url }}/images/hee-the-r-way-heemod-',
-                      echo = F)
-```
+
 
 ## Introduction
 This is the first post in what I'll start calling the "Health Economics The R Way" series, in which I'll provide tutorials on how to do common health economics tasks using R. The target audience would be people who have a bit of programming and data analysis skills, and want to learn how to use R for some of the common tasks used in health econmics/outcomes research. In each post I'll try to give a little bit of background to the topic, but the major focus will be on how to do the programming. For better references, I'd recommend Neumann, et al's. book, which is sort of a standard reference--[Amazon link](https://www.amazon.com/Cost-Effectiveness-Health-Medicine-Peter-Neumann/dp/0190492937/ref=sr_1_1?ie=UTF8&qid=1517673774&sr=8-1&keywords=costeffectiveness+in+health+and+medicine)-- or the Handbooks in Health Economics series from Oxford Press--[Amazon link](https://www.amazon.com/Cost-effectiveness-Analysis-Healthcare-Handbooks-Evaluation/dp/0199227284/ref=sr_1_5?ie=UTF8&qid=1517673774&sr=8-5&keywords=costeffectiveness+in+health+and+medicine).
@@ -26,7 +23,8 @@ It's probably easiest to understand if we actually get in and start programming 
 ## Getting started in R
 To do Markov modeling we'll be using the R `heemod` package. You'll first need to see if you have the package installed and, if you don't, you'll need to download it from CRAN. To check if you have a package installed you can run `"heemod" %in% rownames(installed.packages()` which will check for the name 'heedmod' in the list of all packages you have installed. If you don't have it installed (i.e., the command above returns `FALSE`), you can run `install.packages("heemod")` which, if you're connected to the internet, will automatically download the package from CRAN. Once you've downloaded the package you can get started by calling `library(heemod)`. So, your script should simply be:
 
-```{r installing, echo  = T}
+
+```r
 #To check if you have the package installed you could run: "heemod" %in% rownames(installed.packages())
 #Otherwise be sure to install the package->install.packages("heemod")
 library(heemod)
@@ -54,7 +52,8 @@ Ok, let's say the table above captures the transition probabilities for the old 
 If you compare these tables you'll see that the new drug makes it more likely that someone will stay in lower disease severity. For example, with the old drug, someone who is currently 'low' has a 20% chance of transitioning to 'medium'. With the new drug this chance is only 15%.
 
 We can encode these transition probabilities in R by using the `define_transition` function. Here's an example:
-```{r spec_trans, echo = T, message = F}
+
+```r
 trans_old <- define_transition(
   0.70, 0.20, 0.10,
   0.0, 0.70, 0.30,
@@ -66,22 +65,41 @@ trans_new <- define_transition(
   0.0, 0.85, 0.15,
   0.0, 0.0, 1.0
 )
-
-
 ```
 
 Let's print the matrices:
-```{r, echo=TRUE}
+
+```r
 trans_old
 ```
 
-```{r, echo=TRUE}
+```
+## A transition matrix, 3 states.
+## 
+##   A   B   C  
+## A 0.7 0.2 0.1
+## B     0.7 0.3
+## C         1
+```
+
+
+```r
 trans_new
+```
+
+```
+## A transition matrix, 3 states.
+## 
+##   A   B    C   
+## A 0.8 0.15 0.05
+## B     0.85 0.15
+## C          1
 ```
 
 We see that the matrix states are generically named 'A', 'B', and 'C'. We can add names to make things easier to follow. To do this, we'll modify the attributes (kind of like meta-data) of our transition matrix objects. [Here's an article](http://www.dummies.com/programming/r/how-to-play-with-attributes-in-r/) to get better understanding of attributes in R.
 
-```{r mod_mad, echo = T}
+
+```r
 states <-  c("low", "medium", "high")
 attr(trans_old,'state_names') <- states
 attr(trans_new,'state_names') <- states
@@ -89,12 +107,28 @@ attr(trans_new,'state_names') <- states
 trans_old
 ```
 
+```
+## A transition matrix, 3 states.
+## 
+##        low medium high
+## low    0.7 0.2    0.1 
+## medium     0.7    0.3 
+## high              1
+```
+
 ## Visualizing the transitions
 The `heemod` package has some nice functions available that use `ggplot2` and other packages to visualize models and results (note: you may need to install these packages. For exmaple, I initially got an error saying the `diagram` package was required for plotting, so I needed to install it). For example, we can visualize our transitions by calling `plot` on our transition matrices. Here's a plot for the transition matrix with the old drug.
 
-```{r plot_trans, echo = T}
+
+```r
 plot(trans_old)
 ```
+
+```
+## Loading required namespace: diagram
+```
+
+![plot of chunk plot_trans]({{ site.url }}/images/hee-the-r-way-heemod-plot_trans-1.png)
 
 ## Adding values to states
 The next thing we'll want to do is add value information to our different states. This value information is how we can specify, for example, an individual's costs and health related quality of life. Since we ultimately want to compare drugs, we'll need to specify values for each drug. To do this we'll use a combination of `define_state` to define values for a particular state and `dispatch_strategy` to tell R that we want the value to depend on which 'strategy' (new or old drug) we are using. Our cost information could again come from clinical studies, observational data, etc.. We'll assume that, exlcuding drug costs, if someone spends a year in a 'low' state they incur \$20,000, if they are 'medium' they incur \$40,000, and in a 'high' state they incur \$100,000. We'll also add the drug costs-\$15,000/yr for the old drug and \$40,000/yr for the new drug. 
@@ -103,7 +137,8 @@ Note that, by default, `heemod` models want to do cost-effectiveness analysis (s
 
 Here's the code:
 
-```{r add_val, echo=TRUE}
+
+```r
 state_low <- define_state(
     cost = dispatch_strategy(
       new = 20000 + 40000,
@@ -129,7 +164,8 @@ state_high <- define_state(
 ## Putting states and transitions together to make a model
 Finally, we're ready to combine our states and our transition probabilities together. We'll do this by creating a 'strategy' for each of the drugs using `define_strategy`:
 
-```{r create_strat, echo = T}
+
+```r
 strat_old <- define_strategy(
   transition = trans_new,
   low = state_low,
@@ -147,7 +183,8 @@ strat_new <- define_strategy(
 
 And we can actually run our model by calling `run_model`. In this instance, we'll run the model for a hypothetical population of 500 people all starting at low severity in year 1, and we will run the model for 5 years (that is, at the end of each year we will transition individuals based on the transition matrix). We specify costs and effects as the 'cost' and 'effect' parts in our states defined above.
 
-```{r run_mod, echo=T}
+
+```r
 mod_rslt <- run_model(
   old = strat_old,
   new = strat_new,
@@ -160,8 +197,36 @@ mod_rslt <- run_model(
 )
 ```
 
-```{r summ, echo=T}
+
+```r
 summary(mod_rslt)
+```
+
+```
+## 2 strategies run for 5 cycles.
+## 
+## Initial state counts:
+## 
+## low = 500
+## medium = 0
+## high = 0
+## 
+## Counting method: 'life-table'.
+## 
+## Values:
+## 
+##          cost effect
+## old 130028448   2500
+## new 192528448   2500
+## 
+## Efficiency frontier:
+## 
+## old
+## 
+## Differences:
+## 
+##     Cost Diff. Effect Diff. ICER Ref.
+## new     125000            0  Inf  old
 ```
 
 So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be \$192,528,448 versus $130,028,448 for the old drug or \$125,000 more per person over five years. So, this model suggests the manufacturer is wrong--it will cost payers more to switch to the new drug.

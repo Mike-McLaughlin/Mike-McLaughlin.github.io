@@ -1,0 +1,24 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+I'm always interested in ways that we can apply prinicples from machine learning into the study of causal inference. There are a couple great Medium posts on this topic, [here](https://medium.com/teconomics-blog/machine-learning-for-decision-making-e776f9f8917e)
+and [here](https://medium.com/teconomics-blog/using-ml-to-resolve-experiments-faster-bd8053ff602e).
+
+One of idea those posts didn't touch on is the fact that many machine learning techniques are designed such that they allow for estimation of heterogenous treatment effects, or what some people call condtional average treatment effects (CATE). If we have a binary treatment $d \in \{0,1\}$, we denote the outcome Y under treatment as $Y(1)$ and under no treatment as $Y(0)$, and observed pre-treatment covariates $X$, then the  CATE is defined as $CATE = E[Y(1) - Y(0) | X = x]$. In words, the CATE parameter describes how the treatment effect ($Y(1) - Y(0)$) varies conditional on observed covariates $X$. This means the CATE can answer questions like 'How does a man with 10 years pack history respond to treatment, on average? Is the expected response different for women with 5 years pack history?'
+
+It turns out that one way to estimate the CATE function is through the use of regression trees
+### Why trees?
+I can't say I'm an expert in regression trees, but my understanding is that trees work particularly well here because their fitting algorithm naturally accomodates (or, more appropriately) finds interactions. 
+
+### An example
+```{r cln_dat, echo  = F}
+library(dplyr)
+dat <- readRDS("~/Desktop/MEPS/2015/full year consolidated.rds")
+```
+
+```{r reg_tree, echo=T}
+library(grf)
+```
+### But, but, but...

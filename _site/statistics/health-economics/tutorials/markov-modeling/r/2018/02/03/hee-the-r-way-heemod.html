@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>HEE-The R Way: Intro to Markov Modeling With heemod</title>
+  <meta name="description" content="Introduction This is the first post in what I’ll start calling the “Health Economics The R Way” series, in which I’ll provide tutorials on how to do common h...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/statistics/health-economics/tutorials/markov-modeling/r/2018/02/03/hee-the-r-way-heemod.html">
+  <link rel="alternate" type="application/rss+xml" title="Mike McLaughlin" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Mike McLaughlin</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">HEE-The R Way: Intro to Markov Modeling With heemod</h1>
+    <p class="post-meta">
+      <time datetime="2018-02-03T00:00:00-05:00" itemprop="datePublished">
+        
+        Feb 3, 2018
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="introduction">Introduction</h2>
+<p>This is the first post in what I’ll start calling the “Health Economics The R Way” series, in which I’ll provide tutorials on how to do common health economics tasks using R. The target audience would be people who have a bit of programming and data analysis skills, and want to learn how to use R for some of the common tasks used in health econmics/outcomes research. In each post I’ll try to give a little bit of background to the topic, but the major focus will be on how to do the programming. For better references, I’d recommend Neumann, et al’s. book, which is sort of a standard reference–<a href="https://www.amazon.com/Cost-Effectiveness-Health-Medicine-Peter-Neumann/dp/0190492937/ref=sr_1_1?ie=UTF8&amp;qid=1517673774&amp;sr=8-1&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>– or the Handbooks in Health Economics series from Oxford Press–<a href="https://www.amazon.com/Cost-effectiveness-Analysis-Healthcare-Handbooks-Evaluation/dp/0199227284/ref=sr_1_5?ie=UTF8&amp;qid=1517673774&amp;sr=8-5&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>.</p>
+
+<p>This post covers an introduction to using the <code class="highlighter-rouge">heemod</code> R package to do Markov modeling.</p>
+
+<h2 id="markov-modeling-in-the-context-of-technology-evaluation">Markov modeling in the context of technology evaluation</h2>
+<p>Let’s say we have a new therapy for multiple sclerosis (MS). For those who don’t know, MS is a degenerative disorder. This means means that over time the disease causes more and more damage, causing the symptoms that patients experience to worsen. Let’s also assume the manufacturer of this new therapy (say it’s a pill to be concrete…) wants to price the drug such that therapy would cost $40,000/yr. A lot of money right? An insurer (or in this case a pharmacy benefits manager since it’s a drug) might try to negotiate a lower price on the grounds that $40,000/yr is too much. There might already be an effective drug that costs $15,000/yr. The manufacturer could counter, saying that because their new drug slows disease progression much better than the old drug and, as a result, the manufacturer says insurers could actually save money because they have to pay for fewer rehabilitative services. You could imagine this sort of simple negotiating going back and forth. Ultimately, what would help here is a model that could help quanitfy the value of this new drug and compare that to the value of the old drug.</p>
+
+<p>In this case, a Markov model might help. Markov models are a mathetmatical tool that, in their simplest and most common form, treat individuals as belonging to a single state in a given point in time. Individuals are then assumed to transition to new states with a probability that only depends on their current state (this is the Markov property that gives these models their names).</p>
+
+<p>How can these tools be used to assess the value of drugs? Well, let’s say that we can treat the severity and symptoms of MS as a series of 3 states. Call them ‘low’, ‘medium’, and ‘high’ disease severity. We can say that an individual stays in each state for exactly 1 year, then transitions to a new state (or stays in their current state) based on a set of probabilities. Let’s say the drug affects these transition probabilities. Also, for each year someone is in a given state we can keep a running count of their expected medical expenditures. This would let us say something about that person’s anticipated costs. We could also describe the expected utility, or general quality of life, that someone experiences in each state and keep a running count of that as well.</p>
+
+<p>It’s probably easiest to understand if we actually get in and start programming a bit, so let’s do that.</p>
+
+<h2 id="getting-started-in-r">Getting started in R</h2>
+<p>To do Markov modeling we’ll be using the R <code class="highlighter-rouge">heemod</code> package. You’ll first need to see if you have the package installed and, if you don’t, you’ll need to download it from CRAN. To check if you have a package installed you can run <code class="highlighter-rouge">"heemod" %in% rownames(installed.packages()</code> which will check for the name ‘heedmod’ in the list of all packages you have installed. If you don’t have it installed (i.e., the command above returns <code class="highlighter-rouge">FALSE</code>), you can run <code class="highlighter-rouge">install.packages("heemod")</code> which, if you’re connected to the internet, will automatically download the package from CRAN. Once you’ve downloaded the package you can get started by calling <code class="highlighter-rouge">library(heemod)</code>. So, your script should simply be:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#To check if you have the package installed you could run: "heemod" %in% rownames(installed.packages())</span><span class="w">
+</span><span class="c1">#Otherwise be sure to install the package-&gt;install.packages("heemod")</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">heemod</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="defining-transition-matrices">Defining transition matrices</h2>
+<p>Once the package is loaded you can start defining states and transition probabilities. Let’s again say we have three states: ‘low’, ‘medium’ and ‘high’. We can define a set of transition probabilities between the states in a table where the row indicates the starting state, and the column indicates the ending state. These probabilities could be based on results of clinical studies or based on expert opinion or some other source. Also, note that we have to specify probabilities, not percentages. Probabilities have to be numbers between 0.0 and 1.0.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Low</th>
+      <th>Medium</th>
+      <th>High</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Low</td>
+      <td>0.70</td>
+      <td>0.20</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <td>Medium</td>
+      <td>0.0</td>
+      <td>0.70</td>
+      <td>0.30</td>
+    </tr>
+    <tr>
+      <td>High</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>We’d read this table by looking for someone’s current state in the row, and then reading off the probability of ending up in the next state from the columns. So, for example, our table says that someone who is currently ‘low’ severity has a probability of 0.70 (or, 70% chance) of staying in ‘low’ severity next year, a probability of 0.20 of transitioning to ‘medium’ severity, and a probability of 0.10 of transitioning to ‘high’ severity. Note that the transition probability for someone in a ‘high’ state is 1.0, which says that someone who is currently severly impacted cannot reduce their disease severity.</p>
+
+<p>Ok, let’s say the table above captures the transition probabilities for the old drug. Let’s now specify the transition probabilites for the new drug (the one costing $40,000/yr). Again, these probabilties could be absed on results of a clinical trial or similar:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Low</th>
+      <th>Medium</th>
+      <th>High</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Low</td>
+      <td>0.80</td>
+      <td>0.15</td>
+      <td>0.05</td>
+    </tr>
+    <tr>
+      <td>Medium</td>
+      <td>0.0</td>
+      <td>0.85</td>
+      <td>0.15</td>
+    </tr>
+    <tr>
+      <td>High</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>If you compare these tables you’ll see that the new drug makes it more likely that someone will stay in lower disease severity. For example, with the old drug, someone who is currently ‘low’ has a 20% chance of transitioning to ‘medium’. With the new drug this chance is only 15%.</p>
+
+<p>We can encode these transition probabilities in R by using the <code class="highlighter-rouge">define_transition</code> function. Here’s an example:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trans_old</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_transition</span><span class="p">(</span><span class="w">
+  </span><span class="m">0.70</span><span class="p">,</span><span class="w"> </span><span class="m">0.20</span><span class="p">,</span><span class="w"> </span><span class="m">0.10</span><span class="p">,</span><span class="w">
+  </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">0.70</span><span class="p">,</span><span class="w"> </span><span class="m">0.30</span><span class="p">,</span><span class="w">
+  </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">1.0</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="n">trans_new</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_transition</span><span class="p">(</span><span class="w">
+  </span><span class="m">0.80</span><span class="p">,</span><span class="w"> </span><span class="m">0.15</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span><span class="w">
+  </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">0.85</span><span class="p">,</span><span class="w"> </span><span class="m">0.15</span><span class="p">,</span><span class="w">
+  </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">0.0</span><span class="p">,</span><span class="w"> </span><span class="m">1.0</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s print the matrices:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trans_old</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## A transition matrix, 3 states.
+## 
+##   A   B   C  
+## A 0.7 0.2 0.1
+## B     0.7 0.3
+## C         1
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trans_new</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## A transition matrix, 3 states.
+## 
+##   A   B    C   
+## A 0.8 0.15 0.05
+## B     0.85 0.15
+## C          1
+</code></pre></div></div>
+
+<p>We see that the matrix states are generically named ‘A’, ‘B’, and ‘C’. We can add names to make things easier to follow. To do this, we’ll modify the attributes (kind of like meta-data) of our transition matrix objects. <a href="http://www.dummies.com/programming/r/how-to-play-with-attributes-in-r/">Here’s an article</a> to get better understanding of attributes in R.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">states</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="nf">c</span><span class="p">(</span><span class="s2">"low"</span><span class="p">,</span><span class="w"> </span><span class="s2">"medium"</span><span class="p">,</span><span class="w"> </span><span class="s2">"high"</span><span class="p">)</span><span class="w">
+</span><span class="nf">attr</span><span class="p">(</span><span class="n">trans_old</span><span class="p">,</span><span class="s1">'state_names'</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">states</span><span class="w">
+</span><span class="nf">attr</span><span class="p">(</span><span class="n">trans_new</span><span class="p">,</span><span class="s1">'state_names'</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">states</span><span class="w">
+
+</span><span class="n">trans_old</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## A transition matrix, 3 states.
+## 
+##        low medium high
+## low    0.7 0.2    0.1 
+## medium     0.7    0.3 
+## high              1
+</code></pre></div></div>
+
+<h2 id="visualizing-the-transitions">Visualizing the transitions</h2>
+<p>The <code class="highlighter-rouge">heemod</code> package has some nice functions available that use <code class="highlighter-rouge">ggplot2</code> and other packages to visualize models and results (note: you may need to install these packages. For exmaple, I initially got an error saying the <code class="highlighter-rouge">diagram</code> package was required for plotting, so I needed to install it). For example, we can visualize our transitions by calling <code class="highlighter-rouge">plot</code> on our transition matrices. Here’s a plot for the transition matrix with the old drug.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">trans_old</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Loading required namespace: diagram
+</code></pre></div></div>
+
+<p><img src="http://localhost:4000/images/hee-the-r-way-heemod-plot_trans-1.png" alt="plot of chunk plot_trans" /></p>
+
+<h2 id="adding-values-to-states">Adding values to states</h2>
+<p>The next thing we’ll want to do is add value information to our different states. This value information is how we can specify, for example, an individual’s costs and health related quality of life. Since we ultimately want to compare drugs, we’ll need to specify values for each drug. To do this we’ll use a combination of <code class="highlighter-rouge">define_state</code> to define values for a particular state and <code class="highlighter-rouge">dispatch_strategy</code> to tell R that we want the value to depend on which ‘strategy’ (new or old drug) we are using. Our cost information could again come from clinical studies, observational data, etc.. We’ll assume that, exlcuding drug costs, if someone spends a year in a ‘low’ state they incur $20,000, if they are ‘medium’ they incur $40,000, and in a ‘high’ state they incur $100,000. We’ll also add the drug costs-$15,000/yr for the old drug and $40,000/yr for the new drug.</p>
+
+<p>Note that, by default, <code class="highlighter-rouge">heemod</code> models want to do cost-effectiveness analysis (something we won’t cover in depth yet). For this reason when you define a state you need to specify both a cost aspect <em>and</em> and effect aspect. Here we’ll just code effect as <code class="highlighter-rouge">1</code> although in reality this effect would be something like years of life or quality-adjusted life years (QALYs).</p>
+
+<p>Here’s the code:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">state_low</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_state</span><span class="p">(</span><span class="w">
+    </span><span class="n">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch_strategy</span><span class="p">(</span><span class="w">
+      </span><span class="n">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">40000</span><span class="p">,</span><span class="w">
+      </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">15000</span><span class="p">),</span><span class="w">
+    </span><span class="n">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="n">state_med</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_state</span><span class="p">(</span><span class="w">
+    </span><span class="n">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch_strategy</span><span class="p">(</span><span class="w">
+      </span><span class="n">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">40000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">40000</span><span class="p">,</span><span class="w">
+      </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">40000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">15000</span><span class="p">),</span><span class="w">
+    </span><span class="n">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="n">state_high</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_state</span><span class="p">(</span><span class="w">
+    </span><span class="n">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch_strategy</span><span class="p">(</span><span class="w">
+      </span><span class="n">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">40000</span><span class="p">,</span><span class="w">
+      </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100000</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">15000</span><span class="p">),</span><span class="w">
+    </span><span class="n">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="putting-states-and-transitions-together-to-make-a-model">Putting states and transitions together to make a model</h2>
+<p>Finally, we’re ready to combine our states and our transition probabilities together. We’ll do this by creating a ‘strategy’ for each of the drugs using <code class="highlighter-rouge">define_strategy</code>:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">strat_old</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_strategy</span><span class="p">(</span><span class="w">
+  </span><span class="n">transition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trans_new</span><span class="p">,</span><span class="w">
+  </span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_low</span><span class="p">,</span><span class="w">
+  </span><span class="n">medium</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_med</span><span class="p">,</span><span class="w">
+  </span><span class="n">high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_high</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="n">strat_new</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">define_strategy</span><span class="p">(</span><span class="w">
+  </span><span class="n">transition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trans_new</span><span class="p">,</span><span class="w">
+  </span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_low</span><span class="p">,</span><span class="w">
+  </span><span class="n">medium</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_med</span><span class="p">,</span><span class="w">
+  </span><span class="n">high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state_high</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>And we can actually run our model by calling <code class="highlighter-rouge">run_model</code>. In this instance, we’ll run the model for a hypothetical population of 500 people all starting at low severity in year 1, and we will run the model for 5 years (that is, at the end of each year we will transition individuals based on the transition matrix). We specify costs and effects as the ‘cost’ and ‘effect’ parts in our states defined above.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mod_rslt</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">run_model</span><span class="p">(</span><span class="w">
+  </span><span class="n">old</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strat_old</span><span class="p">,</span><span class="w">
+  </span><span class="n">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strat_new</span><span class="p">,</span><span class="w">
+  </span><span class="c1">#Run for five years</span><span class="w">
+  </span><span class="n">cycles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span><span class="p">,</span><span class="w">
+  </span><span class="c1">#Hypothetical population of 500 identical people, all starting at low severity</span><span class="w">
+  </span><span class="n">init</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">500</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span><span class="w">
+  </span><span class="n">cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cost</span><span class="p">,</span><span class="w">
+  </span><span class="n">effect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">effect</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">summary</span><span class="p">(</span><span class="n">mod_rslt</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## 2 strategies run for 5 cycles.
+## 
+## Initial state counts:
+## 
+## low = 500
+## medium = 0
+## high = 0
+## 
+## Counting method: 'life-table'.
+## 
+## Values:
+## 
+##          cost effect
+## old 130028448   2500
+## new 192528448   2500
+## 
+## Efficiency frontier:
+## 
+## old
+## 
+## Differences:
+## 
+##     Cost Diff. Effect Diff. ICER Ref.
+## new     125000            0  Inf  old
+</code></pre></div></div>
+
+<p>So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be $192,528,448 versus $130,028,448 for the old drug or $1.25 × 10<sup>5</sup> more per person over five years. So, this model suggests the manufacturer is wrong–it will cost payers more to switch to the new drug.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>This post should give enough to get someone started with building their own Markov models in R. In future posts I’ll show how to extend this functionality so models can become more flexible. For example, showing how you can allow probabilities or costs to vary based on individual demographics. I’ll also show how this Markov modeling can be integrated with other R functionality, making it faster and easier to execute very complex analyses.</p>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Mike McLaughlin</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Mike McLaughlin
+            
+            </li>
+            
+            <li><a href="mailto:smclaugh86 AT gmail">smclaugh86 AT gmail</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/Mike-McLaughlin"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">Mike-McLaughlin</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/CorkersCouch"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">CorkersCouch</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Personal website/blog of Mike McLaughlin, health economist in Maryland.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
