@@ -1,7 +1,7 @@
 ---
 title: "HEE-The R Way: Intro to Markov Modeling With heemod"
 output: html_document
-categories: statistics health-economics tutorials markov-modeling R
+categories: hee_r
 ---
 
 ```{r setup, include=FALSE}
