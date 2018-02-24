@@ -1,0 +1,37 @@
+---
+title: "Ashenfelter's Dip or Why It Can Be Hard To Attribute Savings to Gaps In Care"
+author: "Mike McLaughlin"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path='{{ site.url }}/images/ashenfelter-dip',
+                      echo = F)
+```
+
+## Ashenfeleter's dip - What is it?
+I was recently working on a new set of analyses where I was trying to get better estimates of how closing gaps in care impacts things like medical trend, ED/inpatient hospitalization, and member retention. While working on this I noticed an interesting pattern that economists have noted for years, and it's a pattern that I think impacts a lot of program evaluations in health care.
+
+To set the stage let's imagine the following: We're using an algorithm to monitor a member's adherence to a HEDIS measure, say whether a diabetic member has received a retinal exam in the past year. We see a set of members where we say the gap is open (i.e., they haven't gotten an eye exam within the past ~365 days) and among that set, we find that subset who eventually close the gap. If we plot expenditures around the mean expenditure around the period of gap closure, we'll tend to see something like this:
+
+```{r, message=FALSE}
+library(ggplot2)
+library(dplyr)
+set.seed(4228) #For rnorm() later
+
+dat <- data.frame(month = seq(from = -12, to = 12),
+                  x = seq(from = 0, to = 24)) %>%
+  arrange(month) %>%
+  mutate(pmpm = 1000 + 75*((month+2)/(month**2 + 1)) + rnorm(25, sd = 10))
+
+ggplot(dat, aes(month,pmpm)) + 
+  geom_point() + 
+  geom_smooth(se = F) +
+  labs(x = "Month  (Month Where Gap Closes is Month 0)",
+       y = "Spend, $ PMPM")
+```
+
+We have something that's kinda flat in the period further from gap closure, then spikes as we get closer to the date of gap closure. If you dig into the date, you'll typically find that something happens  This is actually a pretty well-known phenomena that sometimes goes by the name of (you might've guessed): *Ashenfelter's Dip*. The dip is a type of empirical regularity that can occur when you observe some outcome in a pre/post setting **and** the units you are observing can 'select' into treatment based on the outcome. 
+
+What do we mean here? Let's go back to the gap closure setting. Imagine members have an open gap, but then have some really impactful (and expensive) event. Maybe it's a visit to the ER for hyperglycemia, or a battery of tests (imagings, labs, etc..) done over a series
+

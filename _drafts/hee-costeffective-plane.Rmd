@@ -3,10 +3,10 @@ title: "HEE-The R Way: Understanding the Cost-Effectiveness Plane"
 output: html_document
 ---
   
-  ```{r setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.path='{{ site.url }}/images/hee-the-r-way-heemod-',
                       echo = F)
 ```
 
 ## Introduction
-In a [prior post](add link) I gave a very brief introduction to Markov modeling in the context of health economics
+In a [prior post](add link) I gave a very brief introduction to Markov modeling in the context of health economics. Notably, I didn't actually give a lot of background

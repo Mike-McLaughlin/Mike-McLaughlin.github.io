@@ -1,0 +1,66 @@
+---
+title: "Untitled"
+author: "Mike McLaughlin"
+output: html_document
+categories: statistics
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Desktop/MEPS")
+```
+
+## Bringing in data
+```{r call_dat}
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+?map
+dirs <- list()
+for(i in 2:5){
+  dirs[[i-1]] <- paste0("~/Desktop/MEPS/201",i)
+}
+
+clean_func <- function(dir_in){
+ cln_dat <- readRDS("~/Desktop/MEPS/2012/medical conditions.rds") %>%
+  select(dupersid, icd9codx) %>% 
+  filter(!(icd9codx  %in% c(-1, -9))) %>%
+  mutate(icd9codx = as.character(icd9codx), 
+         val = 1) %>%
+  group_by(dupersid) %>%
+  summarise(codes = paste(icd9codx, collapse=" "))
+}
+#
+d12 <- 
+
+head(d12)
+
+
+stocks <- data.frame(
+  time = as.Date('2009-01-01') + 0:9,
+  X = rnorm(10, 0, 1),
+  Y = rnorm(10, 0, 2),
+  Z = rnorm(10, 0, 4)
+)
+stocksm <- stocks %>% gather(stock, price, -time)
+stocksm %>% spread(stock, price)
+
+
+
+
+d13 <- readRDS()
+d14 <- readRDS()
+d15 <- readRDS()
+
+summary(cars)
+```
+
+## Tokenize codes
+
+```{r token}
+tokenizer <- text_tokenizer(num_words = length(unique()))
+tokenizer %>% fit_text_tokenizer(reviews)
+```
+
+## Next steps
