@@ -7,10 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>HEE-The R Way: Intro to Markov Modeling With heemod</title>
-  <meta name="description" content="Introduction This is the first post in what I’ll start calling the “Health Economics The R Way” series, in which I’ll provide tutorials on how to do common h...">
+  <meta name="description" content="Introduction This is the first post in what I’ll start calling the “Health Economics Evaluation: The R Way” series, in which I’ll provide tutorials on how to...">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="http://localhost:4000/statistics/health-economics/tutorials/markov-modeling/r/2018/02/03/hee-the-r-way-heemod.html">
+  <link rel="canonical" href="http://localhost:4000/hee_r/2018/02/11/hee-the-r-way-heemod.html">
   <link rel="alternate" type="application/rss+xml" title="Mike McLaughlin" href="/feed.xml">
   
   
@@ -69,16 +69,16 @@
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">HEE-The R Way: Intro to Markov Modeling With heemod</h1>
     <p class="post-meta">
-      <time datetime="2018-02-03T00:00:00-05:00" itemprop="datePublished">
+      <time datetime="2018-02-11T00:00:00-05:00" itemprop="datePublished">
         
-        Feb 3, 2018
+        Feb 11, 2018
       </time>
       </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
     <h2 id="introduction">Introduction</h2>
-<p>This is the first post in what I’ll start calling the “Health Economics The R Way” series, in which I’ll provide tutorials on how to do common health economics tasks using R. The target audience would be people who have a bit of programming and data analysis skills, and want to learn how to use R for some of the common tasks used in health econmics/outcomes research. In each post I’ll try to give a little bit of background to the topic, but the major focus will be on how to do the programming. For better references, I’d recommend Neumann, et al’s. book, which is sort of a standard reference–<a href="https://www.amazon.com/Cost-Effectiveness-Health-Medicine-Peter-Neumann/dp/0190492937/ref=sr_1_1?ie=UTF8&amp;qid=1517673774&amp;sr=8-1&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>– or the Handbooks in Health Economics series from Oxford Press–<a href="https://www.amazon.com/Cost-effectiveness-Analysis-Healthcare-Handbooks-Evaluation/dp/0199227284/ref=sr_1_5?ie=UTF8&amp;qid=1517673774&amp;sr=8-5&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>.</p>
+<p>This is the first post in what I’ll start calling the “Health Economics Evaluation: The R Way” series, in which I’ll provide tutorials on how to do common health economics tasks using R. The target audience would be people who have a bit of programming and data analysis skills, and want to learn how to use R for some of the common tasks used in health econmics/outcomes research. In each post I’ll try to give a little bit of background to the topic, but the major focus will be on how to do the programming. For better references, I’d recommend Neumann, et al’s. book, which is sort of a standard reference–<a href="https://www.amazon.com/Cost-Effectiveness-Health-Medicine-Peter-Neumann/dp/0190492937/ref=sr_1_1?ie=UTF8&amp;qid=1517673774&amp;sr=8-1&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>– or the Handbooks in Health Economics series from Oxford Press–<a href="https://www.amazon.com/Cost-effectiveness-Analysis-Healthcare-Handbooks-Evaluation/dp/0199227284/ref=sr_1_5?ie=UTF8&amp;qid=1517673774&amp;sr=8-5&amp;keywords=costeffectiveness+in+health+and+medicine">Amazon link</a>.</p>
 
 <p>This post covers an introduction to using the <code class="highlighter-rouge">heemod</code> R package to do Markov modeling.</p>
 
@@ -327,7 +327,7 @@
 ## new     125000            0  Inf  old
 </code></pre></div></div>
 
-<p>So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be $192,528,448 versus $130,028,448 for the old drug or $1.25 × 10<sup>5</sup> more per person over five years. So, this model suggests the manufacturer is wrong–it will cost payers more to switch to the new drug.</p>
+<p>So, we can read from this model that in this hypothetical population of 500 people the total cost over 5 years if they all took the new drug would be $192,528,448 versus $130,028,448 for the old drug or $125,000 more per person over five years. So, this model suggests the manufacturer is wrong–it will cost payers more to switch to the new drug.</p>
 
 <h2 id="conclusion">Conclusion</h2>
 <p>This post should give enough to get someone started with building their own Markov models in R. In future posts I’ll show how to extend this functionality so models can become more flexible. For example, showing how you can allow probabilities or costs to vary based on individual demographics. I’ll also show how this Markov modeling can be integrated with other R functionality, making it faster and easier to execute very complex analyses.</p>
